@@ -1,4 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+    <title>HealthFirst - Appointment System</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .modal-content {
+        background-color: #f8f8fb;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      .appointment-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .appointment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem;
+        background-color: #4c47e6;
+        color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateX(150%);
+        transition: transform 0.3s ease;
+        z-index: 1001;
+      }
+      
+      .notification.show {
+        transform: translateX(0);
+      }
+      
+      .profile-menu {
+        display: none;
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+        min-width: 200px;
+      }
+      
+      .profile-menu.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="relative flex size-full min-h-screen flex-col bg-[#f8f8fb] group/design-root overflow-x-hidden" style='font-family: Inter, "Noto Sans", sans-serif;'>
+      <!-- Notification -->
+      <div class="notification" id="notification">
+        <span id="notification-text"></span>
+      </div>
+      
+      <!-- Appointment Modal -->
+      <div class="modal" id="appointment-modal">
+        <div class="modal-content">
+          <h2 class="text-2xl font-bold mb-4">Book an Appointment</h2>
+          <form id="appointment-form">
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-1" for="service">Service</label>
+              <select class="w-full p-2 border rounded" id="service" required>
+                <option value="">Select a service</option>
+                <option value="General Checkup">General Checkup</option>
+                <option value="Dental Cleaning">Dental Cleaning</option>
+                <option value="Eye Exam">Eye Exam</option>
+                <option value="Cardiology">Cardiology Consultation</option>
+                <option value="Dermatology">Dermatology Consultation</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-1" for="doctor">Doctor</label>
+              <select class="w-full p-2 border rounded" id="doctor" required>
+                <option value="">Select a doctor</option>
+                <option value="Dr. Emily Carter">Dr. Emily Carter</option>
+                <option value="Dr. David Lee">Dr. David Lee</option>
+                <option value="Dr. Sarah Jones">Dr. Sarah Jones</option>
+                <option value="Dr. Michael Wong">Dr. Michael Wong</option>
+                <option value="Dr. Jessica Patel">Dr. Jessica Patel</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-1" for="date">Date</label>
+              <input type="date" class="w-full p-2 border rounded" id="date" required min="">
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-1" for="time">Time</label>
+              <select class="w-full p-2 border rounded" id="time" required>
+                <option value="">Select a time</option>
+                <option value="9:00 AM">9:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="1:00 PM">1:00 PM</option>
+                <option value="2:00 PM">2:00 PM</option>
+                <option value="3:00 PM">3:00 PM</option>
+                <option value="4:00 PM">4:00 PM</option>
+              </select>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button type="button" class="px-4 py-2 border rounded" id="cancel-btn">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-[#4c47e6] text-white rounded">Book Appointment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Appointment Details Modal -->
+      <div class="modal" id="details-modal">
+        <div class="modal-content">
+          <h2 class="text-2xl font-bold mb-4">Appointment Details</h2>
+          <div id="appointment-details"></div>
+          <div class="flex justify-end mt-4">
+            <button type="button" class="px-4 py-2 bg-red-500 text-white rounded" id="cancel-appointment-btn">Cancel Appointment</button>
+            <button type="button" class="px-4 py-2 border rounded ml-2" id="close-details-btn">Close</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Profile Menu -->
+      <div class="profile-menu" id="profile-menu">
+        <div class="p-4 border-b">
+          <p class="font-semibold">John Doe</p>
+          <p class="text-sm text-gray-600">john.doe@example.com</p>
+        </div>
+        <div class="p-2">
+          <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Profile Settings</a>
+          <a href="#" class="block px-2 py-1 hover:bg-gray-100 rounded">Appointment History</a>
+          <button id="logout-btn" class="block w-full text-left px-2 py-1 hover:bg-gray-100 rounded">Logout</button>
+        </div>
+      </div>
 
+      <div class="layout-container flex h-full grow flex-col">
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e8e8f3] px-10 py-3">
+          <div class="flex items-center gap-4 text-[#0f0e1b]">
+            <div class="size-4">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M13.8261 17.4264C16.7203 18.1174 20.2244 18.5217 24 18.5217C27.7756 18.5217 31.2797 18.1174 34.1739 17.4264C36.9144 16.7722 39.9967 15.2331 41.3563 14.1648L24.8486 40.6391C24.4571 41.267 23.5429 41.267 23.1514 40.6391L6.64374 14.1648C8.00331 15.2331 11.0856 16.7722 13.8261 17.4264Z"
+                  fill="currentColor"
+                ></path>
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M39.998 12.236C39.9944 12.2537 39.9875 12.2845 39.9748 12.3294C39.9436 12.4399 39.8949 12.5741 39.8346 12.7175C39.8168 12.7597 39.7989 12.8007 39.7813 12.8398C38.5103 13.7113 35.9788 14.9393 33.7095 15.4811C30.9875 16.131 27.6413 16.5217 24 16.5217C20.3587 16.5217 17.0125 16.131 14.2905 15.4811C12.0012 14.9346 9.44505 13.6897 8.18538 12.8168C8.17384 12.7925 8.16216 12.767 8.15052 12.7408C8.09919 12.6249 8.05721 12.5114 8.02977 12.411C8.00356 12.3152 8.00039 12.2667 8.00004 12.2612C8.00004 12.261 8 12.2607 8.00004 12.2612C8.00004 12.2359 8.0104 11.9233 8.68485 11.3686C9.34546 10.8254 10.4222 10.2469 11.9291 9.72276C14.9242 8.68098 19.1919 8 24 8C28.8081 8 33.0758 8.68098 36.0709 9.72276C37.5778 10.2469 38.6545 10.8254 39.3151 11.3686C39.9006 11.8501 39.9857 12.1489 39.998 12.236ZM4.95178 15.2312L21.4543 41.6973C22.6288 43.5809 25.3712 43.5809 26.5457 41.6973L43.0534 15.223C43.0709 15.1948 43.0878 15.1662 43.104 15.1371L41.3563 14.1648C43.104 15.1371 43.1038 15.1374 43.104 15.1371L43.1051 15.135L43.1065 15.1325L43.1101 15.1261L43.1199 15.1082C43.1276 15.094 43.1377 15.0754 43.1497 15.0527C43.1738 15.0075 43.2062 14.9455 43.244 14.8701C43.319 14.7208 43.4196 14.511 43.5217 14.2683C43.6901 13.8679 44 13.0689 44 12.2609C44 10.5573 43.003 9.22254 41.8558 8.2791C40.6947 7.32427 39.1354 6.55361 37.385 5.94477C33.8654 4.72057 29.133 4 24 4C18.867 4 14.1346 4.72057 10.615 5.94478C8.86463 6.55361 7.30529 7.32428 6.14419 8.27911C4.99695 9.22255 3.99999 10.5573 3.99999 12.2609C3.99999 13.1275 4.29264 13.9078 4.49321 14.3607C4.60375 14.6102 4.71348 14.8196 4.79687 14.9689C4.83898 15.0444 4.87547 15.1065 4.9035 15.1529C4.91754 15.1762 4.92954 15.1957 4.93916 15.2111L4.94662 15.223L4.95178 15.2312ZM35.9868 18.996L24 38.22L12.0131 18.996C12.4661 19.1391 12.9179 19.2658 13.3617 19.3718C16.4281 20.1039 20.0901 20.5217 24 20.5217C27.9099 20.5217 31.5719 20.1039 34.6383 19.3718C35.082 19.2658 35.5339 19.1391 35.9868 18.996Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
+            <h2 class="text-[#0f0e1b] text-lg font-bold leading-tight tracking-[-0.015em]">HealthFirst</h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-8">
+            <div class="flex items-center gap-9">
+              <a class="text-[#0f0e1b] text-sm font-medium leading-normal hover:text-[#4c47e6]" href="#">Home</a>
+              <a class="text-[#0f0e1b] text-sm font-medium leading-normal hover:text-[#4c47e6]" href="#">Services</a>
+              <a class="text-[#0f0e1b] text-sm font-medium leading-normal hover:text-[#4c47e6]" href="#">Doctors</a>
+              <a class="text-[#0f0e1b] text-sm font-medium leading-normal hover:text-[#4c47e6]" href="#">Departments</a>
+              <a class="text-[#0f0e1b] text-sm font-medium leading-normal hover:text-[#4c47e6]" href="#">Contact</a>
+            </div>
+            <button
+              class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#4c47e6] text-[#f8f8fb] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#3a36b5] transition-colors"
+              id="book-appointment-btn"
+            >
+              <span class="truncate">Book an Appointment</span>
+            </button>
+            <div
+              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer"
+              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAnxOyCBxgx84bEMRZDWPsZqYqMpEEqGMqdwrgVdmQBlo5eLznPt-54DUUBZmFCr6i0XymMca4znNrzps63M3dp1uhME0qemnxa1wPDxMTrhVqQIgCl2d5WhGIxup-yl06741VDraclGzu1BvwHJ1m-HX3R-2CiEGFrpmM7lnvxLKxn0bmO4YzIboej2CW0K5ZK1FJl7FbeYxaKqFtjxfO_NgZUa6EUV1fvgseioDDP0sJMOr3RyhMZuJNYJXv7QGYUNuW-wXYmPD3Q");'
+              id="profile-btn"
+            ></div>
+          </div>
+        </header>
+        <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <div class="@container">
+              <div class="@[480px]:p-4">
+                <div
+                  class="flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 @[480px]:rounded-lg items-center justify-center p-4"
+                  style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuB8MgZdfNkoTWhJCkk8EJQxjIbkMP7vkS0JXaXa09knQrO0jrapaUXHsGlYpRmFHfttT9EBW1nLCIFvTyjQq7RMtF_xrVveUGH6NFFgL6DU53TYgfGExmJS30FfqBwydjjbDWJpNIAgysLk83F184Eh9xhxHWTP4bmNcZ2aHCMikKAAqUCaUKlYQp7p-5sgXUXCChX-znoFF1PpQa8Nk18cVzc8scMQHaOcwFk9nIZ4qWVW5WASmeWAV6OfKrkZ6mcGfggHnKDiv57c");'
+                >
+                  <div class="flex flex-col gap-2 text-center">
+                    <h1
+                      class="text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]"
+                    >
+                      Your Health, Our Priority
+                    </h1>
+                    <h2 class="text-white text-sm font-normal leading-normal @[480px]:text-base @[480px]:font-normal @[480px]:leading-normal">
+                      Schedule your next appointment with ease and convenience. Our team of experts is here to provide the best care possible.
+                    </h2>
+                  </div>
+                  <button
+                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-[#4c47e6] text-[#f8f8fb] text-sm font-bold leading-normal tracking-[0.015em] @[480px]:text-base @[480px]:font-bold @[480px]:leading-normal @[480px]:tracking-[0.015em] hover:bg-[#3a36b5] transition-colors"
+                    id="hero-book-btn"
+                  >
+                    <span class="truncate">Book an Appointment</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <h2 class="text-[#0f0e1b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Upcoming Appointments</h2>
+            <div id="appointments-container">
+              <!-- Appointments will be dynamically added here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Set minimum date for date input to today
+        const dateInput = document.getElementById('date');
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        let mm = today.getMonth() + 1;
+        let dd = today.getDate();
+        
+        if (mm < 10) mm = '0' + mm;
+        if (dd < 10) dd = '0' + dd;
+        
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        dateInput.min = todayStr;
+        
+        // Sample appointments data
+        let appointments = [
+          {
+            id: 1,
+            service: "General Checkup",
+            doctor: "Dr. Emily Carter",
+            date: "2024-07-15",
+            time: "10:00 AM",
+            image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDV4S5INeUeIps5W86zoDWgV-SdaCuvJFz-IVXVi2iFXXA-wueTX-RUXOf3TxpzC9e-0orEBxd44kDmTkap-fJiL3F09YucIR54tAWMdN7OI_gEY3dg0Pv0PVeF7kyfqbCouLQA6Dzmg9Inyq7iNe_iXP3YAxZRR12DOrSzPeYP7fkk2CZFKB8W1BcJg4pHs2skBbNejIBnBizFOrBRb-V85ZESfeYpn66SHZBiIwJCWXjAdH3TrnC2eKzTmg9EDF42coCTMWh4kdYI"
+          },
+          {
+            id: 2,
+            service: "Dental Cleaning",
+            doctor: "Dr. David Lee",
+            date: "2024-07-20",
+            time: "2:00 PM",
+            image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB1SJKtpRNzImF-1p1_06Nn4vlNWsL54VdQerJ7SKvvjPP3zqSOdnqQXKssCLYbPV-UdDe8bxiiJRt6JG-nDWp3kwCyrrfxRh7_4Fuq4oRMjnLpnolXgiefp3joUALRm7JLZ_ijtJrN24BbwD6oY1V1iZhPc1iKyqzh2zgdCcjOsDyN0Hafm0u0B71k4GKbhY4N3FB028iLQ8W7B_VIGKe_sKGRaeOLMu9zC2bjDDhhVsbIVXtvL4ITuOCFnI067IFftsMHOD4SXCbl"
+          },
+          {
+            id: 3,
+            service: "Eye Exam",
+            doctor: "Dr. Sarah Jones",
+            date: "2024-07-25",
+            time: "11:00 AM",
+            image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCoVquRxfhRVjQ6DVuYc91977Dr_KHrf4a255n53v-cJ1zQ02sgdj-9LFyhbCJvDiqhAnIM9Qr4_ZT_2RD3ccFF2uDEsb4Blxi839CQRmToj1utPaz-xO8vqMOh7Lcnhx6cq52lDUaDUsoEdCCk4J5iDJdp3LaHxe-JP5MPmmF1hDmJlfSANxxPxMhsQQTlPLqoE_-_alcRL5YO1zXuxcaImS8Q5FIQZ7_Y9dCZ2URpYyUDYuebfnYHwz9easf53PCINfmfZAuo_bHg"
+          }
+        ];
+        
+        // Render appointments
+        function renderAppointments() {
+          const container = document.getElementById('appointments-container');
+          container.innerHTML = '';
+          
+          if (appointments.length === 0) {
+            container.innerHTML = `
+              <div class="p-4 text-center">
+                <p class="text-gray-500">You have no upcoming appointments.</p>
+              </div>
+            `;
+            return;
+          }
+          
+          appointments.forEach(appointment => {
+            const formattedDate = formatDate(appointment.date);
+            const appointmentElement = document.createElement('div');
+            appointmentElement.className = 'p-4 appointment-card';
+            appointmentElement.dataset.id = appointment.id;
+            appointmentElement.innerHTML = `
+              <div class="flex items-stretch justify-between gap-4 rounded-lg bg-[#f8f8fb] p-4 shadow-[0_0_4px_rgba(0,0,0,0.1)] cursor-pointer">
+                <div class="flex flex-col gap-1 flex-[2_2_0px]">
+                  <p class="text-[#0f0e1b] text-base font-bold leading-tight">${appointment.service}</p>
+                  <p class="text-[#535095] text-sm font-normal leading-normal">${appointment.doctor} | ${formattedDate} | ${appointment.time}</p>
+                </div>
+                <div
+                  class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg flex-1"
+                  style='background-image: url("${appointment.image}")'
+                ></div>
+              </div>
+            `;
+            
+            appointmentElement.addEventListener('click', () => {
+              showAppointmentDetails(appointment);
+            });
+            
+            container.appendChild(appointmentElement);
+          });
+        }
+        
+        // Format date to readable format
+        function formatDate(dateString) {
+          const options = { year: 'numeric', month: 'long', day: 'numeric' };
+          return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Show appointment details
+        function showAppointmentDetails(appointment) {
+          const modal = document.getElementById('details-modal');
+          const detailsContainer = document.getElementById('appointment-details');
+          const formattedDate = formatDate(appointment.date);
+          
+          detailsContainer.innerHTML = `
+            <div class="mb-4">
+              <p class="font-semibold">Service:</p>
+              <p>${appointment.service}</p>
+            </div>
+            <div class="mb-4">
+              <p class="font-semibold">Doctor:</p>
+              <p>${appointment.doctor}</p>
+            </div>
+            <div class="mb-4">
+              <p class="font-semibold">Date:</p>
+              <p>${formattedDate}</p>
+            </div>
+            <div class="mb-4">
+              <p class="font-semibold">Time:</p>
+              <p>${appointment.time}</p>
+            </div>
+          `;
+          
+          // Set up cancel button
+          const cancelBtn = document.getElementById('cancel-appointment-btn');
+          cancelBtn.onclick = function() {
+            cancelAppointment(appointment.id);
+            modal.style.display = 'none';
+          };
+          
+          modal.style.display = 'flex';
+        }
+        
+        // Cancel appointment
+        function cancelAppointment(id) {
+          appointments = appointments.filter(app => app.id !== id);
+          renderAppointments();
+          showNotification('Appointment cancelled successfully.');
+        }
+        
+        // Show notification
+        function showNotification(message) {
+          const notification = document.getElementById('notification');
+          const notificationText = document.getElementById('notification-text');
+          
+          notificationText.textContent = message;
+          notification.classList.add('show');
+          
+          setTimeout(() => {
+            notification.classList.remove('show');
+          }, 3000);
+        }
+        
+        // Modal functionality
+        const appointmentModal = document.getElementById('appointment-modal');
+        const detailsModal = document.getElementById('details-modal');
+        const bookAppointmentBtn = document.getElementById('book-appointment-btn');
+        const heroBookBtn = document.getElementById('hero-book-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const closeDetailsBtn = document.getElementById('close-details-btn');
+        const appointmentForm = document.getElementById('appointment-form');
+        const profileBtn = document.getElementById('profile-btn');
+        const profileMenu = document.getElementById('profile-menu');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        // Open appointment modal
+        function openAppointmentModal() {
+          appointmentModal.style.display = 'flex';
+        }
+        
+        bookAppointmentBtn.addEventListener('click', openAppointmentModal);
+        heroBookBtn.addEventListener('click', openAppointmentModal);
+        
+        // Close appointment modal
+        cancelBtn.addEventListener('click', function() {
+          appointmentModal.style.display = 'none';
+        });
+        
+        // Close details modal
+        closeDetailsBtn.addEventListener('click', function() {
+          detailsModal.style.display = 'none';
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+          if (event.target === appointmentModal) {
+            appointmentModal.style.display = 'none';
+          }
+          if (event.target === detailsModal) {
+            detailsModal.style.display = 'none';
+          }
+        });
+        
+        // Handle form submission
+        appointmentForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const service = document.getElementById('service').value;
+          const doctor = document.getElementById('doctor').value;
+          const date = document.getElementById('date').value;
+          const time = document.getElementById('time').value;
+          
+          // Create new appointment
+          const newAppointment = {
+            id: appointments.length > 0 ? Math.max(...appointments.map(a => a.id)) + 1 : 1,
+            service,
+            doctor,
+            date,
+            time,
+            image: getImageForService(service)
+          };
+          
+          appointments.push(newAppointment);
+          renderAppointments();
+          appointmentModal.style.display = 'none';
+          appointmentForm.reset();
+          showNotification('Appointment booked successfully!');
+        });
+        
+        // Get appropriate image based on service
+        function getImageForService(service) {
+          const serviceImages = {
+            'General Checkup': 'https://lh3.googleusercontent.com/aida-public/AB6AXuDV4S5INeUeIps5W86zoDWgV-SdaCuvJFz-IVXVi2iFXXA-wueTX-RUXOf3TxpzC9e-0orEBxd44kDmTkap-fJiL3F09YucIR54tAWMdN7OI_gEY3dg0Pv0PVeF7kyfqbCouLQA6Dzmg9Inyq7iNe_iXP3YAxZRR12DOrSzPeYP7fkk2CZFKB8W1BcJg4pHs2skBbNejIBnBizFOrBRb-V85ZESfeYpn66SHZBiIwJCWXjAdH3TrnC2eKzTmg9EDF42coCTMWh4kdYI',
+            'Dental Cleaning': 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1SJKtpRNzImF-1p1_06Nn4vlNWsL54VdQerJ7SKvvjPP3zqSOdnqQXKssCLYbPV-UdDe8bxiiJRt6JG-nDWp3kwCyrrfxRh7_4Fuq4oRMjnLpnolXgiefp3joUALRm7JLZ_ijtJrN24BbwD6oY1V1iZhPc1iKyqzh2zgdCcjOsDyN0Hafm0u0B71k4GKbhY4N3FB028iLQ8W7B_VIGKe_sKGRaeOLMu9zC2bjDDhhVsbIVXtvL4ITuOCFnI067IFftsMHOD4SXCbl',
+            'Eye Exam': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCoVquRxfhRVjQ6DVuYc91977Dr_KHrf4a255n53v-cJ1zQ02sgdj-9LFyhbCJvDiqhAnIM9Qr4_ZT_2RD3ccFF2uDEsb4Blxi839CQRmToj1utPaz-xO8vqMOh7Lcnhx6cq52lDUaDUsoEdCCk4J5iDJdp3LaHxe-JP5MPmmF1hDmJlfSANxxPxMhsQQTlPLqoE_-_alcRL5YO1zXuxcaImS8Q5FIQZ7_Y9dCZ2URpYyUDYuebfnYHwz9easf53PCINfmfZAuo_bHg',
+            'Cardiology': 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+            'Dermatology': 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
+          };
+          
+          return serviceImages[service] || serviceImages['General Checkup'];
+        }
+        
+        // Profile menu toggle
+        profileBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          profileMenu.classList.toggle('show');
+        });
+        
+        // Close profile menu when clicking elsewhere
+        document.addEventListener('click', function() {
+          profileMenu.classList.remove('show');
+        });
+        
+        // Prevent profile menu from closing when clicking inside it
+        profileMenu.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+        
+        // Logout functionality
+        logoutBtn.addEventListener('click', function() {
+          showNotification('Logged out successfully.');
+          profileMenu.classList.remove('show');
+        });
+        
+        // Initial render
+        renderAppointments();
+      });
+    </script>
+  </body>
+</html>
 <html>
   <head>
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
