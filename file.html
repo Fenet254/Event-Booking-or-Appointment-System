@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stitch Design - Appointment Scheduler</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900">
+  <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Inter, "Noto Sans", sans-serif;
+      background-color: #f8f8fb;
+      color: #0f0e1b;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      background-color: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid #e8e8f3;
+      background-color: #f8f8fb;
+    }
+
+    .title {
+      font-size: 1.375rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #0f0e1b;
+    }
+
+    .form-container {
+      padding: 1.5rem 2rem 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #0f0e1b;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background-color: #e8e8f3;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-size: 1rem;
+      color: #0f0e1b;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(76, 71, 230, 0.2);
+    }
+
+    .form-input::placeholder, .form-textarea::placeholder {
+      color: #535095;
+    }
+
+    .form-input {
+      height: 3.5rem;
+    }
+
+    .form-textarea {
+      min-height: 9rem;
+      resize: vertical;
+    }
+
+    .datetime-container {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .date-input, .time-select {
+      flex: 1;
+    }
+
+    .time-select {
+      background-color: #e8e8f3;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-size: 1rem;
+      color: #0f0e1b;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23535095' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80a8,8,0,0,1,11.32-11.32L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1rem;
+    }
+
+    .time-select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(76, 71, 230, 0.2);
+    }
+
+    .submit-btn {
+      width: 100%;
+      background-color: #4c47e6;
+      color: #f8f8fb;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .submit-btn:hover {
+      background-color: #3a35c7;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(76, 71, 230, 0.3);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .calendar-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #535095;
+      pointer-events: none;
+    }
+
+    /* Form validation styles */
+    .form-input.error, .form-textarea.error, .time-select.error {
+      box-shadow: 0 0 0 2px #e74008;
+    }
+
+    .error-message {
+      color: #e74008;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .success-message {
+      background-color: #078841;
+      color: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .datetime-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .container {
+        border-radius: 0.5rem;
+      }
+      
+      .header, .form-container {
+        padding: 1.25rem;
+      }
+    }
+
+    /* Hover effects */
+    .form-input:hover, .form-textarea:hover, .time-select:hover {
+      background-color: #e0e0ed;
+    }
+
+    /* Focus effects */
+    .form-input:focus, .form-textarea:focus, .time-select:focus {
+      background-color: #e8e8f3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container fade-in">
+    <div class="header">
+      <h1 class="title">Schedule Appointment</h1>
+    </div>
+    
+    <div class="form-container">
+      <div id="successMessage" class="success-message">
+        Your appointment has been scheduled successfully!
+      </div>
+      
+      <form id="appointmentForm">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" placeholder="Enter your name" id="nameInput">
+          <div class="error-message" id="nameError">Please enter your name</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" placeholder="Enter your email" id="emailInput">
+          <div class="error-message" id="emailError">Please enter a valid email address</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Date & Time</label>
+          <div class="datetime-container">
+            <div class="date-input">
+              <input type="date" class="form-input" id="dateInput">
+              <div class="error-message" id="dateError">Please select a date</div>
+            </div>
+            <div class="time-select-container">
+              <select class="time-select" id="timeSelect">
+                <option value="">Select time</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="17:00">5:00 PM</option>
+              </select>
+              <div class="error-message" id="timeError">Please select a time</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" placeholder="Add any notes for your appointment" id="notesInput"></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn">Schedule Appointment</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('appointmentForm');
+      const nameInput = document.getElementById('nameInput');
+      const emailInput = document.getElementById('emailInput');
+      const dateInput = document.getElementById('dateInput');
+      const timeSelect = document.getElementById('timeSelect');
+      const notesInput = document.getElementById('notesInput');
+      const successMessage = document.getElementById('successMessage');
+      
+      // Set minimum date to today
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      let mm = today.getMonth() + 1;
+      let dd = today.getDate();
+      
+      if (mm < 10) mm = '0' + mm;
+      if (dd < 10) dd = '0' + dd;
+      
+      const todayFormatted = `${yyyy}-${mm}-${dd}`;
+      dateInput.setAttribute('min', todayFormatted);
+      
+      // Form validation and submission
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        let isValid = true;
+        
+        // Validate name
+        if (!nameInput.value.trim()) {
+          showError(nameInput, 'nameError');
+          isValid = false;
+        } else {
+          hideError(nameInput, 'nameError');
+        }
+        
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailInput.value || !emailRegex.test(emailInput.value)) {
+          showError(emailInput, 'emailError');
+          isValid = false;
+        } else {
+          hideError(emailInput, 'emailError');
+        }
+        
+        // Validate date
+        if (!dateInput.value) {
+          showError(dateInput, 'dateError');
+          isValid = false;
+        } else {
+          hideError(dateInput, 'dateError');
+        }
+        
+        // Validate time
+        if (!timeSelect.value) {
+          showError(timeSelect, 'timeError');
+          isValid = false;
+        } else {
+          hideError(timeSelect, 'timeError');
+        }
+        
+        if (isValid) {
+          // In a real application, you would send the data to a server here
+          console.log('Form submitted:', {
+            name: nameInput.value,
+            email: emailInput.value,
+            date: dateInput.value,
+            time: timeSelect.value,
+            notes: notesInput.value
+          });
+          
+          // Show success message
+          successMessage.style.display = 'block';
+          form.reset();
+          
+          // Hide success message after 5 seconds
+          setTimeout(() => {
+            successMessage.style.display = 'none';
+          }, 5000);
+        }
+      });
+      
+      // Real-time validation
+      nameInput.addEventListener('blur', function() {
+        if (!this.value.trim()) {
+          showError(this, 'nameError');
+        } else {
+          hideError(this, 'nameError');
+        }
+      });
+      
+      emailInput.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!this.value || !emailRegex.test(this.value)) {
+          showError(this, 'emailError');
+        } else {
+          hideError(this, 'emailError');
+        }
+      });
+      
+      dateInput.addEventListener('change', function() {
+        if (!this.value) {
+          showError(this, 'dateError');
+        } else {
+          hideError(this, 'dateError');
+        }
+      });
+      
+      timeSelect.addEventListener('change', function() {
+        if (!this.value) {
+          showError(this, 'timeError');
+        } else {
+          hideError(this, 'timeError');
+        }
+      });
+      
+      // Helper functions for showing/hiding errors
+      function showError(input, errorId) {
+        input.classList.add('error');
+        document.getElementById(errorId).style.display = 'block';
+      }
+      
+      function hideError(input, errorId) {
+        input.classList.remove('error');
+        document.getElementById(errorId).style.display = 'none';
+      }
+      
+      // Add animation to form elements
+      const formElements = document.querySelectorAll('.form-group');
+      formElements.forEach((element, index) => {
+        element.style.animationDelay = `${index * 0.1}s`;
+        element.classList.add('fade-in');
+      });
+    });
+  </script>
+</body>
+</html>
