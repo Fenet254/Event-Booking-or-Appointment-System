@@ -23,6 +23,8 @@ export default async function handler(req, res) {
         capacity: Number(capacity) || 0,
       },
     });
+
+    
     res.status(201).json(ev);
   } else {
     res.setHeader("Allow", ["GET", "POST"]);
