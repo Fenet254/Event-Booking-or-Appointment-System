@@ -1,0 +1,10 @@
+body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f7fafc; margin:0; padding:0; color:#111827; }
+.container { max-width:900px; margin:36px auto; padding:16px; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.card { background:white; border-radius:8px; padding:16px; box-shadow:0 4px 10px rgba(0,0,0,0.06); margin-bottom:12px; }
+.btn { background:#0f766e; color:white; padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
+.btn.secondary { background:#ef4444; }
+.form-row { margin-bottom:8px; display:flex; flex-direction:column; }
+.input, textarea { padding:8px; border-radius:6px; border:1px solid #e5e7eb; }
+.small { font-size:0.9rem; color:#6b7280; }
+.event-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
