@@ -9,6 +9,8 @@ export default async function handler(req, res) {
     });
     res.json(events);
   } else if (req.method === "POST") {
+
+    
     const { title, description, location, startAt, endAt, capacity } = req.body;
     if (!title || !startAt) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -24,7 +26,7 @@ export default async function handler(req, res) {
       },
     });
 
-    
+
     res.status(201).json(ev);
   } else {
     res.setHeader("Allow", ["GET", "POST"]);
