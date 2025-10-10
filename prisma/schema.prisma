@@ -3,29 +3,79 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("user") // user, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bookings  Booking[]
+  reviews   Review[]
+  events    Event[]  @relation("Organizer")
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  events      Event[]
+}
+
+model Tag {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  events Event[]
+}
+
 model Event {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   description String?
   location    String?
   startAt     DateTime
   endAt       DateTime
-  capacity    Int      @default(0)
-  createdAt   DateTime @default(now())
+  capacity    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  organizerId Int?
+  organizer   User?     @relation("Organizer", fields: [organizerId], references: [id])
+  imageUrl    String?
+  price       Float     @default(0)
+  isVirtual   Boolean   @default(false)
+  tags        Tag[]
   bookings    Booking[]
+  reviews     Review[]
 }
 
 model Booking {
+  id            Int      @id @default(autoincrement())
+  event         Event    @relation(fields: [eventId], references: [id])
+  eventId       Int
+  user          User?    @relation(fields: [userId], references: [id])
+  userId        Int?
+  name          String
+  email         String
+  seats         Int      @default(1)
+  createdAt     DateTime @default(now())
+  status        String   @default("confirmed")
+  paymentStatus String   @default("pending") // pending, paid, failed
+  paymentId     String?
+}
+
+model Review {
   id        Int      @id @default(autoincrement())
   event     Event    @relation(fields: [eventId], references: [id])
   eventId   Int
-  name      String
-  email     String
-  seats     Int      @default(1)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  rating    Int      // 1-5
+  comment   String?
   createdAt DateTime @default(now())
-  status    String   @default("confirmed")
 }
