@@ -1,14 +1,14 @@
 # Event Booking System Improvement Plan
 
 ## Phase 1: Project Structure Overhaul
-- [ ] Create folders: components/, hooks/, utils/, types/, lib/ (expand), public/, tests/
-- [ ] Move pages/events.js to api/events.js (rename/move)
-- [ ] Create subfolders: components/layout/, components/events/, components/admin/
-- [ ] Migrate to TypeScript: Rename .js to .tsx/.ts, add tsconfig.json
+- [x] Create folders: components/, hooks/, utils/, types/, lib/ (expand), public/, tests/
+- [x] Move pages/events.js to api/events.js (rename/move)
+- [x] Create subfolders: components/layout/, components/events/, components/admin/
+- [x] Migrate to TypeScript: Rename .js to .tsx/.ts, add tsconfig.json
 - [ ] Delete/replace styles.css with Tailwind setup
 
 ## Phase 2: Database & Backend Enhancements
-- [ ] Edit prisma/schema.prisma: Add User, Category, Review, Tag models; enhance Event/Booking
+- [x] Edit prisma/schema.prisma: Add User, Category, Review, Tag models; enhance Event/Booking
 - [ ] Switch to PostgreSQL: Update datasource, add env vars
 - [ ] Run Prisma migrations: npx prisma migrate dev, generate
 - [ ] Edit api/events.js: Add GET by ID, search/filter, DELETE/PUT; add validation
