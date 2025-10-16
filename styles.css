@@ -1,10 +1,37 @@
-body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f7fafc; margin:0; padding:0; color:#111827; }
-.container { max-width:900px; margin:36px auto; padding:16px; }
-.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-.card { background:white; border-radius:8px; padding:16px; box-shadow:0 4px 10px rgba(0,0,0,0.06); margin-bottom:12px; }
-.btn { background:#0f766e; color:white; padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
-.btn.secondary { background:#ef4444; }
-.form-row { margin-bottom:8px; display:flex; flex-direction:column; }
-.input, textarea { padding:8px; border-radius:6px; border:1px solid #e5e7eb; }
-.small { font-size:0.9rem; color:#6b7280; }
-.event-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
+  }
+
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
