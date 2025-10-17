@@ -3,13 +3,18 @@ import '../styles.css'
 import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider } from 'next-themes'
 import { motion } from 'framer-motion'
+import type { AppProps } from 'next/app'
 
-export default function App({
-  Component,
-  pageProps: { session, ...pageProps },
-}) {
+interface CustomAppProps extends AppProps {
+  pageProps: {
+    session?: any
+    [key: string]: any
+  }
+}
+
+export default function App({ Component, pageProps }: CustomAppProps) {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={pageProps.session}>
       <ThemeProvider attribute="class" defaultTheme="light">
         <motion.div
           initial={{ opacity: 0 }}
